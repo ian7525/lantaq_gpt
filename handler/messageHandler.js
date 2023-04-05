@@ -1,17 +1,14 @@
-import openai from "../lib/openai.js"
-
-async function convertMsgFromCompletion(text) {
-  const completion = await openai.createCOmpletion({
+async function convertMsgFromCompletion(openai, content) {
+  const completion = await openai.createChatCompletion({
     model: "gpt-3.5-turbo",
-    prompt: text,
+    messages: [{ role: "user", content }],
     max_tokens: 1024,
   })
 
-  console.log("message from completion=", completion)
-  return completion.data.choices[0].text.trim()
+  return completion.data.choices[0].message.content.trim()
 }
 
-export default async function messageHandler(client, event) {
+export default async function messageHandler(client, openai, event) {
   if (event.type !== "message" || event.message.type !== "text") {
     return null
   }
@@ -20,10 +17,9 @@ export default async function messageHandler(client, event) {
 
   const result = {
     type: "text",
-    text:
-      typeof text === String && toString(text).startsWith("line:")
-        ? text
-        : await convertMsgFromCompletion(text),
+    text: String(text).toLowerCase().startsWith("line:")
+      ? String(text).substring(5)
+      : await convertMsgFromCompletion(openai, text),
   }
 
   return await client.replyMessage(event.replyToken, result)
