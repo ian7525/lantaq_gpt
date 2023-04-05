@@ -13,8 +13,6 @@ app.get("/health", (_, res) => {
 })
 
 app.post("/callback", linebot.lineMw, async (req, res) => {
-  console.log("header=", req.headers)
-  console.log("body=", req.body)
   try {
     for (const event of req.body.events) {
       const result = await handler.messageHandler(linebot.lineClient, event)
