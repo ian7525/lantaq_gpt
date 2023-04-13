@@ -8,8 +8,6 @@ dotenv.config()
 const app = express()
 const linebot = linebotLib(process.env)
 
-app.use(express.json())
-
 app.get('/health', (_, res) => {
   res.status(200).send({ message: 'OK' })
 })
@@ -27,7 +25,7 @@ app.post('/callback', linebot.lineMw, async (req, res) => {
   }
 })
 
-app.post('/gpt', handler.gptHandler)
+app.post('/gpt', express.json(), handler.gptHandler)
 
 // listen on port
 const port = process.env.PORT || 5000
