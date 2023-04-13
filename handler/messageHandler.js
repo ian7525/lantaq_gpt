@@ -1,19 +1,25 @@
 import { gptRepo } from './gptHandler.js'
+import { saveChat } from '../utils/chatHistoryUtils.js'
 
 export default async function messageHandler(client, event) {
   if (event.type !== 'message' || event.message.type !== 'text') {
     return null
   }
 
+  const { userId } = event.source.user
+
   const gpt = gptRepo()
-  const text = event.message.text
+  const content = event.message.text
   const result = {
     type: 'text',
-    text: String(text).toLowerCase().startsWith('line:')
-      ? String(text).substring(5)
-      : await gpt.chatCompletion(text),
+    text: String(content).toLowerCase().startsWith('line:')
+      ? String(content).substring(5)
+      : await gpt.chatCompletion({ userId, question: content }),
   }
   console.log('result=', result)
+
+  // save chat history
+  saveChat({ userId, content, response: result })
 
   return await client.replyMessage(event.replyToken, result)
 }

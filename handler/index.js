@@ -1,3 +1,4 @@
 import messageHandler from './messageHandler.js'
 import gptHandler from './gptHandler.js'
-export default { messageHandler, gptHandler }
+import chatHistoryHandler from './chatHistoryHandler.js'
+export default { messageHandler, gptHandler, chatHistoryHandler }

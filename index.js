@@ -15,7 +15,6 @@ app.get('/health', (_, res) => {
 app.post('/callback', linebot.lineMw, async (req, res) => {
   try {
     for (const event of req.body.events) {
-      console.log('event=', JSON.stringify(event))
       const result = await handler.messageHandler(linebot.lineClient, event)
       return res.json(result)
     }
@@ -27,6 +26,8 @@ app.post('/callback', linebot.lineMw, async (req, res) => {
 })
 
 app.post('/gpt', express.json(), handler.gptHandler)
+
+app.post('/history', express.json(), handler.chatHistoryHandler)
 
 // listen on port
 const port = process.env.PORT || 5000
