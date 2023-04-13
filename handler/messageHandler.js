@@ -6,7 +6,8 @@ export default async function messageHandler(client, event) {
     return null
   }
 
-  const { userId } = event.source.user
+  console.log('event.source=', event.source)
+  const { userId } = event.source
 
   const gpt = gptRepo()
   const content = event.message.text
