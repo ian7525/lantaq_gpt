@@ -3,27 +3,29 @@ import * as dotenv from 'dotenv'
 import openaiLib from '../lib/openai.js'
 
 dotenv.config()
-
+let previousAns = null
 export function gptRepo() {
   const openai = openaiLib(process.env)
 
-  async function convertMsgFromCompletion(content) {
+  async function chatCompletion(question, role = 'user') {
+    const content = !!previousAns ? `${previousAns}\n${question}` : question
     const completion = await openai.openAIApi.createChatCompletion({
       model: 'gpt-3.5-turbo',
-      messages: [{ role: 'user', content }],
+      messages: [{ role, content }],
       max_tokens: 1024,
     })
 
-    return completion.data.choices[0].message.content.trim()
+    const responseAns = completion.data.choices[0].message.content.trim()
+    previousAns = `${question}\n${responseAns}`
+    return responseAns
   }
-  return { completion: convertMsgFromCompletion }
+  return { chatCompletion }
 }
 
 export default async function gptHandler(req, res) {
-  console.log('req.body', req.body)
   const { text } = req.body
 
   const gpt = gptRepo()
-  const result = await gpt.completion(text)
+  const result = await gpt.chatCompletion(text)
   return res.status(200).json({ result })
 }

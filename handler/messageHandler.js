@@ -6,14 +6,12 @@ export default async function messageHandler(client, event) {
   }
 
   const gpt = gptRepo()
-  console.log('gpt=', gpt)
   const text = event.message.text
-  console.log('text=', text)
   const result = {
     type: 'text',
     text: String(text).toLowerCase().startsWith('line:')
       ? String(text).substring(5)
-      : await gpt.completion(text),
+      : await gpt.chatCompletion(text),
   }
   console.log('result=', result)
 
