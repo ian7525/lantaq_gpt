@@ -21,8 +21,9 @@ export default function gptUtils(apiKey) {
       max_tokens: 1024,
     })
 
-    const responseAns = completion.data.choices[0].message.content.trim()
-    return responseAns
+    const responseMsg = completion.data.choices[0].message
+    console.log('Completion response msg=', responseMsg)
+    return responseMsg.content.trim()
   }
   return { chatCompletion }
 }

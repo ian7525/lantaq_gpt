@@ -1,24 +1,41 @@
 import { saveChat } from '../utils/chatHistoryUtils.js'
 
-export default async function messageHandler(gpt, client, event) {
-  if (event.type !== 'message' || event.message.type !== 'text') {
-    return null
+async function evtHandler(gpt, client, event) {
+  const { type, message, source, replyToken } = event
+  if (type !== 'message' || message.type !== 'text') {
+    const err = { message: `Event type error:${event}` }
+    throw err
   }
 
-  console.log('event.source=', event.source)
-  const { userId } = event.source
-
-  const content = event.message.text
+  console.log('Event source=', source)
+  const userId = source.type === 'group' ? source.groupId : source.userId
+  const content = message.text
   const result = {
     type: 'text',
     text: String(content).toLowerCase().startsWith('line:')
       ? String(content).substring(5)
       : await gpt.chatCompletion({ userId, question: content }),
   }
-  console.log('result=', result)
+  console.log('Completion result=', result)
 
   // save chat history
   saveChat({ userId, content, response: result })
 
-  return await client.replyMessage(event.replyToken, result)
+  return await client.replyMessage(replyToken, result)
+}
+
+export default async function messageHandler(req, res) {
+  const { gpt, linebot } = res.locals
+  const { events } = req.body
+
+  try {
+    for (const event of events) {
+      const result = await evtHandler(gpt, linebot.lineClient, event)
+      console.log('evtHandler result=', result)
+      return res.json(result)
+    }
+  } catch (err) {
+    const { message = 'Internal Server Error', statusCode = 500 } = err
+    res.status(statusCode).json({ message })
+  }
 }

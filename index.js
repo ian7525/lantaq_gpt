@@ -17,24 +17,7 @@ const lineMw = (req, res, next) => {
   const linebot = res.locals.linebot
   linebot.lineMw(req, res, next)
 }
-app.post('/callback', lineMw, async (req, res) => {
-  try {
-    const gpt = res.locals.gpt
-    const linebot = res.locals.linebot
-    for (const event of req.body.events) {
-      const result = await handler.messageHandler(
-        gpt,
-        linebot.lineClient,
-        event
-      )
-      return res.json(result)
-    }
-  } catch (err) {
-    const { message = 'Internal Server Error' } = err
-    console.log(err)
-    res.status(500).send({ message })
-  }
-})
+app.post('/callback', lineMw, handler.messageHandler)
 
 app.post('/gpt', express.json(), handler.gptHandler)
 
