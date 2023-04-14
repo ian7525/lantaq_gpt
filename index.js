@@ -13,6 +13,10 @@ app.get('/health', (req, res) => {
   res.status(200).send({ message: 'OK' })
 })
 
+app.get('/version', (req, res) => {
+  res.status(200).send({ message: 'v1.1' })
+})
+
 const lineMw = (req, res, next) => {
   const linebot = res.locals.linebot
   linebot.lineMw(req, res, next)
