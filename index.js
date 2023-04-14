@@ -1,21 +1,32 @@
 import express from 'express'
-import * as dotenv from 'dotenv'
 
-import linebotLib from './lib/linebot.js'
+import mw from './middleware/index.js'
 import handler from './handler/index.js'
 
-dotenv.config()
 const app = express()
-const linebot = linebotLib(process.env)
 
-app.get('/health', (_, res) => {
+app.use(mw.initMw)
+app.use(mw.openAiMw)
+app.use(mw.linebotMw)
+
+app.get('/health', (req, res) => {
   res.status(200).send({ message: 'OK' })
 })
 
-app.post('/callback', linebot.lineMw, async (req, res) => {
+const lineMw = (req, res, next) => {
+  const linebot = res.locals.linebot
+  linebot.lineMw(req, res, next)
+}
+app.post('/callback', lineMw, async (req, res) => {
   try {
+    const gpt = res.locals.gpt
+    const linebot = res.locals.linebot
     for (const event of req.body.events) {
-      const result = await handler.messageHandler(linebot.lineClient, event)
+      const result = await handler.messageHandler(
+        gpt,
+        linebot.lineClient,
+        event
+      )
       return res.json(result)
     }
   } catch (err) {

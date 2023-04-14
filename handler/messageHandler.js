@@ -1,7 +1,6 @@
-import { gptRepo } from './gptHandler.js'
 import { saveChat } from '../utils/chatHistoryUtils.js'
 
-export default async function messageHandler(client, event) {
+export default async function messageHandler(gpt, client, event) {
   if (event.type !== 'message' || event.message.type !== 'text') {
     return null
   }
@@ -9,7 +8,6 @@ export default async function messageHandler(client, event) {
   console.log('event.source=', event.source)
   const { userId } = event.source
 
-  const gpt = gptRepo()
   const content = event.message.text
   const result = {
     type: 'text',
