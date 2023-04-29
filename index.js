@@ -23,6 +23,25 @@ const lineMw = (req, res, next) => {
 }
 app.post('/callback', lineMw, handler.messageHandler)
 
+app.post('/callback-test', lineMw, async (req, res) => {
+  const { linebot } = res.locals
+  const { events } = req.body
+  const client = linebot.lineClient
+
+  console.log('req.headers=', req.headers)
+  console.log('req.body=', JSON.stringify(req.body))
+
+  for (const event of events) {
+    const { message, replyToken } = event
+    const result = {
+      type: 'text',
+      text: message.text,
+    }
+    const replyMsg = await client.replyMessage(replyToken, result)
+    return res.json(replyMsg)
+  }
+})
+
 app.post('/gpt', express.json(), handler.gptHandler)
 
 app.post('/history', express.json(), handler.chatHistoryHandler)
